@@ -16,6 +16,10 @@ import org.springframework.messaging.handler.annotation.Payload;
 @ConditionalOnExpression("${spring.kafka.enabled:false}")
 public class NcaEventConsumerListener extends EventListener {
 
+    public NcaEventConsumerListener() {
+        EventsLogger.info(this.getClass(), "NCA Organization Statistics Plugin loaded!");
+    }
+
     @Override
     @KafkaListener(topicPattern = ".*",
             clientIdPrefix = "#{'${spring.kafka.client.id}'?:T(java.util.UUID).randomUUID().toString()}",
@@ -28,7 +32,6 @@ public class NcaEventConsumerListener extends EventListener {
                                final @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                                final @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
                                final @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timeStamp) {
-        EventsLogger.info(this.getClass(), "NCA Organization Statistics Plugin loaded!");
         super.eventsListener(event, offset, groupId, key, partition, topic, timeStamp);
     }
 }
