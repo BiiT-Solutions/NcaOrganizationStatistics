@@ -2,6 +2,7 @@ package com.biit.kafka.plugins;
 
 import com.biit.kafka.consumers.EventListener;
 import com.biit.kafka.events.Event;
+import com.biit.kafka.logger.EventsLogger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -27,6 +28,7 @@ public class NcaEventConsumerListener extends EventListener {
                                final @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                                final @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
                                final @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long timeStamp) {
+        EventsLogger.info(this.getClass(), "NCA Organization Statistics Plugin loaded!");
         super.eventsListener(event, offset, groupId, key, partition, topic, timeStamp);
     }
 }
