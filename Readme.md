@@ -22,6 +22,7 @@ If needed, add the kafka configuration settings:
 #Kafka
 spring.kafka.enabled=true
 spring.kafka.topic=form
+spring.kafka.nca.topic=form
 spring.kafka.client.id=
 spring.kafka.group.id=
 spring.kafka.nca.send.topic=processedForm

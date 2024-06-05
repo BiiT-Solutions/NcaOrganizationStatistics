@@ -34,7 +34,7 @@ public class NcaEventController {
 
     public NcaEventController(@Autowired(required = false) NcaEventConsumerListener eventConsumerListener,
                               ClientFactProvider clientFactProvider, NcaEventSender ncaEventSender,
-                              @Value("${spring.kafka.topic:}") String subscribedTopic) {
+                              @Value("${spring.kafka.nca.topic:}") String subscribedTopic) {
         this.clientFactProvider = clientFactProvider;
 
         //Listen to the topic
