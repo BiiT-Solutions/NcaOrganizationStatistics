@@ -44,7 +44,7 @@ public class NcaEventController {
                             event, topic, groupId, key, partition, LocalDateTime.ofInstant(Instant.ofEpochMilli(timeStamp),
                                     TimeZone.getDefault().toZoneId()));
                     final DroolsForm droolsForm = processNca(event);
-                    ncaEventSender.sendResultEvents(droolsForm, null);
+                    ncaEventSender.sendResultEvents(droolsForm, event.getCreatedBy());
                 } else {
                     NcaEventsLogger.debug(this.getClass(), "Ignoring event topic '" + topic + "'.");
                 }
@@ -70,7 +70,11 @@ public class NcaEventController {
                 for (FactDTO ncaEvent : ncaFacts) {
                     //Read the question values and populate a submittedForm
                     final DroolsSubmittedForm ncaForm = ObjectMapperFactory.getObjectMapper().readValue(ncaEvent.getValue(), DroolsSubmittedForm.class);
+                    ncaForm.setSubmittedBy(event.getCreatedBy());
                     ncaForm.getChildren(DroolsSubmittedQuestion.class).forEach(droolsSubmittedQuestion -> {
+                        //Main cards question.
+
+                        //Competence cards.
                         if (!droolsSubmittedQuestion.getAnswers().isEmpty()) {
                             final String value = droolsSubmittedQuestion.getAnswers().iterator().next();
                             try {
@@ -84,6 +88,7 @@ public class NcaEventController {
                         }
                     });
                 }
+                NcaEventsLogger.debug(this.getClass(), "Answers counted '{}'.", answersCount);
                 populateVariables(droolsForm, answersCount, ncaFacts.size());
                 droolsForm.setTag(NcaEventConverter.FORM_OUTPUT);
                 return droolsForm;
@@ -95,7 +100,11 @@ public class NcaEventController {
     }
 
     private void populateVariables(DroolsForm droolsForm, Map<String, Integer> answersCount, double total) {
-        answersCount.forEach((key, value) -> ((DroolsSubmittedForm) droolsForm.getDroolsSubmittedForm())
-                .setVariableValue(droolsForm.getDroolsSubmittedForm(), key, System.out.printf("%.2f", value / total)));
+        answersCount.forEach((key, value) -> {
+            final String valueString = System.out.printf("%.2f", value / total).toString();
+            NcaEventsLogger.debug(this.getClass(), "Populating variable '{}' with value '{}'.", key, valueString);
+            ((DroolsSubmittedForm) droolsForm.getDroolsSubmittedForm())
+                    .setVariableValue(droolsForm.getDroolsSubmittedForm(), key, valueString);
+        });
     }
 }
