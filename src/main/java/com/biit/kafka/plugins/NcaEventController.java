@@ -85,7 +85,8 @@ public class NcaEventController {
                                 final String value = droolsSubmittedQuestion.getAnswers().iterator().next();
                                 try {
                                     answersCount.putIfAbsent(droolsSubmittedQuestion.getName() + "_" + value, 0);
-                                    answersCount.put(droolsSubmittedQuestion.getName() + "_" + value, answersCount.get(droolsSubmittedQuestion.getName() + "_" + value)
+                                    answersCount.put(droolsSubmittedQuestion.getName() + "_" + value, answersCount.get(droolsSubmittedQuestion.getName()
+                                            + "_" + value)
                                             + 1);
                                 } catch (NumberFormatException e) {
                                     NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
