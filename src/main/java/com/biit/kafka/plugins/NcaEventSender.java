@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NcaEventSender {
 
-    @Value("${spring.kafka.send.topic:}")
+    @Value("${spring.kafka.nca.send.topic:}")
     private String sendTopic;
 
     private final KafkaEventTemplate kafkaTemplate;

@@ -22,8 +22,8 @@ public class NcaEventConsumerListener extends EventListener {
 
     @Override
     @KafkaListener(topicPattern = ".*",
-            clientIdPrefix = "#{'${spring.kafka.client.id}'?:T(java.util.UUID).randomUUID().toString()}",
-            groupId = "#{'${spring.kafka.group.id}'?:T(java.util.UUID).randomUUID().toString()}",
+            clientIdPrefix = "#{'${spring.kafka.nca.client.id}'?:T(java.util.UUID).randomUUID().toString()}",
+            groupId = "#{'${spring.kafka.nca.group.id}'?:T(java.util.UUID).randomUUID().toString()}",
             containerFactory = "templateEventListenerContainerFactory", autoStartup = "${spring.kafka.enabled:true}")
     public void eventsListener(@Payload(required = false) Event event,
                                final @Header(KafkaHeaders.OFFSET) Integer offset,
