@@ -15,6 +15,7 @@ import java.util.UUID;
 public class NcaEventConverter {
 
     private static final String DROOLS_RESULT_EVENT_TYPE = "DroolsResultForm";
+    private static final String FORM_OUTPUT = "NCA Organization";
 
     @Value("${spring.application.name:#{null}}")
     private String applicationName;
@@ -27,13 +28,9 @@ public class NcaEventConverter {
         event.setContentType(MediaType.APPLICATION_ATOM_XML_VALUE);
         event.setCreatedAt(LocalDateTime.now());
         event.setReplyTo(applicationName);
-        if (droolsForm.getLinkedLabel() != null && !droolsForm.getLinkedLabel().isBlank()) {
-            event.setTag(droolsForm.getLinkedLabel());
-        } else {
-            event.setTag(droolsForm.getName());
-        }
+        event.setTag(FORM_OUTPUT);
         event.setCustomProperty(EventCustomProperties.FACT_TYPE, DROOLS_RESULT_EVENT_TYPE);
-        event.setCustomProperty(EventCustomProperties.SOURCE_TAG, droolsForm.getName());
+        event.setCustomProperty(EventCustomProperties.SOURCE_TAG, FORM_OUTPUT);
         return event;
     }
 }
