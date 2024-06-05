@@ -39,3 +39,14 @@ And add the connection to the Fact Manager:
 ```
 factmanager.server.url=http://fact-manager-backend:8080/fact-manager-backend
 ```
+
+## Logging
+
+Include the log in your `logback.xml` file
+
+````
+<logger name="com.biit.kafka.plugins.NcaEventsLogger" additivity="false" level="DEBUG">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="DAILY"/>
+</logger>
+``` 

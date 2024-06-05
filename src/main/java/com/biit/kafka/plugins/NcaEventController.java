@@ -11,7 +11,6 @@ import com.biit.form.result.FormResult;
 import com.biit.kafka.config.ObjectMapperFactory;
 import com.biit.kafka.events.Event;
 import com.biit.kafka.events.EventCustomProperties;
-import com.biit.kafka.logger.EventsLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -41,13 +40,13 @@ public class NcaEventController {
         if (eventConsumerListener != null) {
             eventConsumerListener.addListener((event, offset, groupId, key, partition, topic, timeStamp) -> {
                 if (Objects.equals(topic, subscribedTopic)) {
-                    EventsLogger.debug(this.getClass(), "Received event '{}' on topic '{}', key '{}', partition '{}' at '{}'",
+                    NcaEventsLogger.debug(this.getClass(), "Received event '{}' on topic '{}', key '{}', partition '{}' at '{}'",
                             event, topic, groupId, key, partition, LocalDateTime.ofInstant(Instant.ofEpochMilli(timeStamp),
                                     TimeZone.getDefault().toZoneId()));
                     final DroolsForm droolsForm = processNca(event);
                     ncaEventSender.sendResultEvents(droolsForm, null);
                 } else {
-                    EventsLogger.debug(this.getClass(), "Ignoring event topic '" + topic + "'.");
+                    NcaEventsLogger.debug(this.getClass(), "Ignoring event topic '" + topic + "'.");
                 }
             });
         }
@@ -79,7 +78,7 @@ public class NcaEventController {
                                 answersCount.put(droolsSubmittedQuestion.getName(), answersCount.get(droolsSubmittedQuestion.getName())
                                         + Integer.parseInt(value));
                             } catch (NumberFormatException e) {
-                                EventsLogger.severe(this.getClass(), "Error obtaining the value '' from question '' at form ''.",
+                                NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '' from question '' at form ''.",
                                         value, droolsSubmittedQuestion, ncaForm);
                             }
                         }
@@ -89,7 +88,7 @@ public class NcaEventController {
                 return droolsForm;
             }
         } catch (Exception e) {
-            EventsLogger.debug(this.getClass(), "Received event is not a NCA FormResult!");
+            NcaEventsLogger.debug(this.getClass(), "Received event is not a NCA FormResult!");
         }
         return null;
     }

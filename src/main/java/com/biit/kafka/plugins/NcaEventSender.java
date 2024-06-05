@@ -2,7 +2,6 @@ package com.biit.kafka.plugins;
 
 import com.biit.drools.form.DroolsForm;
 import com.biit.kafka.events.KafkaEventTemplate;
-import com.biit.kafka.logger.EventsLogger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,11 +21,11 @@ public class NcaEventSender {
     }
 
     public void sendResultEvents(DroolsForm response, String executedBy) {
-        EventsLogger.debug(this.getClass().getName(), "Preparing for sending events...");
+        NcaEventsLogger.debug(this.getClass().getName(), "Preparing for sending events...");
         if (kafkaTemplate != null && sendTopic != null && !sendTopic.isEmpty()) {
             //Send the complete form as an event.
             kafkaTemplate.send(sendTopic, ncaEventConverter.getEvent(response, executedBy));
-            EventsLogger.debug(this.getClass().getName(), "Event with results from '{}' send!", response.getName());
+            NcaEventsLogger.debug(this.getClass().getName(), "Event with results from '{}' send!", response.getName());
         }
     }
 }

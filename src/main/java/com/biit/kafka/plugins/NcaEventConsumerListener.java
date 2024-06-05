@@ -2,7 +2,6 @@ package com.biit.kafka.plugins;
 
 import com.biit.kafka.consumers.EventListener;
 import com.biit.kafka.events.Event;
-import com.biit.kafka.logger.EventsLogger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -17,7 +16,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 public class NcaEventConsumerListener extends EventListener {
 
     public NcaEventConsumerListener() {
-        EventsLogger.info(this.getClass(), "NCA Organization Statistics Plugin loaded!");
+        NcaEventsLogger.info(this.getClass(), "NCA Organization Statistics Plugin loaded!");
     }
 
     @Override
