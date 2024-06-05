@@ -2,15 +2,16 @@ package com.biit.kafka.plugins;
 
 import com.biit.drools.form.DroolsForm;
 import com.biit.drools.form.DroolsSubmittedForm;
-import com.biit.drools.form.DroolsSubmittedQuestion;
 import com.biit.drools.form.provider.DroolsFormProvider;
 import com.biit.factmanager.client.SearchParameters;
 import com.biit.factmanager.client.provider.ClientFactProvider;
 import com.biit.factmanager.dto.FactDTO;
 import com.biit.form.result.FormResult;
+import com.biit.form.result.QuestionWithValueResult;
 import com.biit.kafka.config.ObjectMapperFactory;
 import com.biit.kafka.events.Event;
 import com.biit.kafka.events.EventCustomProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -48,7 +49,7 @@ public class NcaEventController {
                             event, topic, groupId, key, partition, LocalDateTime.ofInstant(Instant.ofEpochMilli(timeStamp),
                                     TimeZone.getDefault().toZoneId()));
                     final DroolsForm droolsForm = processNca(event);
-                    ncaEventSender.sendResultEvents(droolsForm, event.getCreatedBy());
+                    ncaEventSender.sendResultEvents(droolsForm, event.getCreatedBy(), event.getSessionId());
                 } else {
                     NcaEventsLogger.debug(this.getClass(), "Ignoring event topic '" + topic + "'.");
                 }
@@ -63,6 +64,7 @@ public class NcaEventController {
             //It is a new NCA form??
             if (Objects.equals(formResult.getLabel(), NCA_FORM_LABEL)) {
                 final DroolsForm droolsForm = DroolsFormProvider.createStructure(formResult);
+                droolsForm.setSubmittedBy(event.getCreatedBy());
                 //Gets all forms from the organization.
                 final Map<SearchParameters, Object> filter = new HashMap<>();
                 filter.putIfAbsent(SearchParameters.APPLICATION, NCA_FORM_LABEL);
@@ -75,35 +77,34 @@ public class NcaEventController {
                 final Map<String, Integer> answersCount = new HashMap<>();
                 for (FactDTO ncaEvent : ncaFacts) {
                     //Read the question values and populate a submittedForm
-                    final DroolsSubmittedForm ncaForm = ObjectMapperFactory.getObjectMapper().readValue(ncaEvent.getValue(), DroolsSubmittedForm.class);
-                    ncaForm.setSubmittedBy(event.getCreatedBy());
-                    ncaForm.getChildren(DroolsSubmittedQuestion.class).forEach(droolsSubmittedQuestion -> {
+                    final FormResult ncaForm = ObjectMapperFactory.getObjectMapper().readValue(ncaEvent.getValue(), FormResult.class);
+                    ncaForm.getChildren(QuestionWithValueResult.class).forEach(questionWithValueResult -> {
                         //Main cards question. Stores each value by answer.
-                        if (Objects.equals(droolsSubmittedQuestion.getName(), NCA_CULTURE_QUESTION_LABEL)
-                                || Objects.equals(droolsSubmittedQuestion.getName(), NCA_CULTURE_NATURE_LABEL)) {
-                            if (!droolsSubmittedQuestion.getAnswers().isEmpty()) {
-                                final String value = droolsSubmittedQuestion.getAnswers().iterator().next();
+                        if (Objects.equals(questionWithValueResult.getName(), NCA_CULTURE_QUESTION_LABEL)
+                                || Objects.equals(questionWithValueResult.getName(), NCA_CULTURE_NATURE_LABEL)) {
+                            if (!questionWithValueResult.getAnswers().isEmpty()) {
+                                final String value = questionWithValueResult.getQuestionValues().iterator().next();
                                 try {
-                                    answersCount.putIfAbsent(droolsSubmittedQuestion.getName() + "_" + value, 0);
-                                    answersCount.put(droolsSubmittedQuestion.getName() + "_" + value, answersCount.get(droolsSubmittedQuestion.getName()
+                                    answersCount.putIfAbsent(questionWithValueResult.getName() + "_" + value, 0);
+                                    answersCount.put(questionWithValueResult.getName() + "_" + value, answersCount.get(questionWithValueResult.getName()
                                             + "_" + value)
                                             + 1);
                                 } catch (NumberFormatException e) {
                                     NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
-                                            value, droolsSubmittedQuestion, ncaForm);
+                                            value, questionWithValueResult, ncaForm);
                                 }
                             }
                         } else {
                             //Competence cards.
-                            if (!droolsSubmittedQuestion.getAnswers().isEmpty()) {
-                                final String value = droolsSubmittedQuestion.getAnswers().iterator().next();
+                            if (!questionWithValueResult.getAnswers().isEmpty()) {
+                                final String value = questionWithValueResult.getQuestionValues().iterator().next();
                                 try {
-                                    answersCount.putIfAbsent(droolsSubmittedQuestion.getName(), 0);
-                                    answersCount.put(droolsSubmittedQuestion.getName(), answersCount.get(droolsSubmittedQuestion.getName())
+                                    answersCount.putIfAbsent(questionWithValueResult.getName(), 0);
+                                    answersCount.put(questionWithValueResult.getName(), answersCount.get(questionWithValueResult.getName())
                                             + 1);
                                 } catch (NumberFormatException e) {
                                     NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
-                                            value, droolsSubmittedQuestion, ncaForm);
+                                            value, questionWithValueResult, ncaForm);
                                 }
                             }
                         }
@@ -114,8 +115,10 @@ public class NcaEventController {
                 droolsForm.setTag(NcaEventConverter.FORM_OUTPUT);
                 return droolsForm;
             }
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             NcaEventsLogger.debug(this.getClass(), "Received event is not a NCA FormResult!");
+        } catch (Exception e) {
+            NcaEventsLogger.errorMessage(this.getClass(), e);
         }
         return null;
     }
