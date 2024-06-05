@@ -26,7 +26,7 @@ import java.util.TimeZone;
 
 @Controller
 public class NcaEventController {
-    private static final String FORM_LABEL = "NCA";
+    private static final String NCA_FORM_LABEL = "NCA";
 
     private final ClientFactProvider clientFactProvider;
     private final String subscribedTopic;
@@ -59,15 +59,15 @@ public class NcaEventController {
         try {
             final FormResult formResult = ObjectMapperFactory.getObjectMapper().readValue(event.getPayload(), FormResult.class);
             //It is a new NCA form??
-            if (Objects.equals(formResult.getLabel(), FORM_LABEL)) {
+            if (Objects.equals(formResult.getLabel(), NCA_FORM_LABEL)) {
                 final DroolsForm droolsForm = DroolsFormProvider.createStructure(formResult);
                 //Gets all forms from the organization.
                 final Map<SearchParameters, Object> filter = new HashMap<>();
-                filter.putIfAbsent(SearchParameters.APPLICATION, FORM_LABEL);
+                filter.putIfAbsent(SearchParameters.APPLICATION, NCA_FORM_LABEL);
                 filter.putIfAbsent(SearchParameters.ORGANIZATION, event.getCustomProperty(EventCustomProperties.ORGANIZATION));
                 filter.putIfAbsent(SearchParameters.LATEST_BY_USER, "true");
                 filter.putIfAbsent(SearchParameters.GROUP, subscribedTopic);
-                filter.putIfAbsent(SearchParameters.ELEMENT, FORM_LABEL);
+                filter.putIfAbsent(SearchParameters.ELEMENT, NCA_FORM_LABEL);
                 final List<FactDTO> ncaFacts = clientFactProvider.get(filter);
 
                 final Map<String, Integer> answersCount = new HashMap<>();
