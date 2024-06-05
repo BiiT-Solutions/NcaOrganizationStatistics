@@ -27,6 +27,8 @@ import java.util.TimeZone;
 @Controller
 public class NcaEventController {
     private static final String NCA_FORM_LABEL = "NCA";
+    private static final String NCA_CULTURE_QUESTION_LABEL = "OrgCulture1";
+    private static final String NCA_CULTURE_NATURE_LABEL = "OrgNature1";
 
     private final ClientFactProvider clientFactProvider;
     private final String subscribedTopic;
@@ -76,18 +78,32 @@ public class NcaEventController {
                     final DroolsSubmittedForm ncaForm = ObjectMapperFactory.getObjectMapper().readValue(ncaEvent.getValue(), DroolsSubmittedForm.class);
                     ncaForm.setSubmittedBy(event.getCreatedBy());
                     ncaForm.getChildren(DroolsSubmittedQuestion.class).forEach(droolsSubmittedQuestion -> {
-                        //Main cards question.
-
-                        //Competence cards.
-                        if (!droolsSubmittedQuestion.getAnswers().isEmpty()) {
-                            final String value = droolsSubmittedQuestion.getAnswers().iterator().next();
-                            try {
-                                answersCount.putIfAbsent(droolsSubmittedQuestion.getName(), 0);
-                                answersCount.put(droolsSubmittedQuestion.getName(), answersCount.get(droolsSubmittedQuestion.getName())
-                                        + Integer.parseInt(value));
-                            } catch (NumberFormatException e) {
-                                NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '' from question '' at form ''.",
-                                        value, droolsSubmittedQuestion, ncaForm);
+                        //Main cards question. Stores each value by answer.
+                        if (Objects.equals(droolsSubmittedQuestion.getName(), NCA_CULTURE_QUESTION_LABEL)
+                                || Objects.equals(droolsSubmittedQuestion.getName(), NCA_CULTURE_NATURE_LABEL)) {
+                            if (!droolsSubmittedQuestion.getAnswers().isEmpty()) {
+                                final String value = droolsSubmittedQuestion.getAnswers().iterator().next();
+                                try {
+                                    answersCount.putIfAbsent(droolsSubmittedQuestion.getName() + "_" + value, 0);
+                                    answersCount.put(droolsSubmittedQuestion.getName() + "_" + value, answersCount.get(droolsSubmittedQuestion.getName() + "_" + value)
+                                            + 1);
+                                } catch (NumberFormatException e) {
+                                    NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
+                                            value, droolsSubmittedQuestion, ncaForm);
+                                }
+                            }
+                        } else {
+                            //Competence cards.
+                            if (!droolsSubmittedQuestion.getAnswers().isEmpty()) {
+                                final String value = droolsSubmittedQuestion.getAnswers().iterator().next();
+                                try {
+                                    answersCount.putIfAbsent(droolsSubmittedQuestion.getName(), 0);
+                                    answersCount.put(droolsSubmittedQuestion.getName(), answersCount.get(droolsSubmittedQuestion.getName())
+                                            + 1);
+                                } catch (NumberFormatException e) {
+                                    NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
+                                            value, droolsSubmittedQuestion, ncaForm);
+                                }
                             }
                         }
                     });
