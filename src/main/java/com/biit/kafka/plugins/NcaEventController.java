@@ -78,7 +78,7 @@ public class NcaEventController {
                 for (FactDTO ncaEvent : ncaFacts) {
                     //Read the question values and populate a submittedForm
                     final FormResult ncaForm = ObjectMapperFactory.getObjectMapper().readValue(ncaEvent.getValue(), FormResult.class);
-                    ncaForm.getChildren(QuestionWithValueResult.class).forEach(questionWithValueResult -> {
+                    ncaForm.getAllChildrenInHierarchy(QuestionWithValueResult.class).forEach(questionWithValueResult -> {
                         //Main cards question. Stores each value by answer.
                         if (Objects.equals(questionWithValueResult.getName(), NCA_CULTURE_QUESTION_LABEL)
                                 || Objects.equals(questionWithValueResult.getName(), NCA_CULTURE_NATURE_LABEL)) {
