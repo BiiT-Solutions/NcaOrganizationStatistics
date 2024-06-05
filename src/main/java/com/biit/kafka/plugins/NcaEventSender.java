@@ -14,18 +14,18 @@ public class NcaEventSender {
 
     private final KafkaEventTemplate kafkaTemplate;
 
-    private final EventConverter eventConverter;
+    private final NcaEventConverter ncaEventConverter;
 
-    public NcaEventSender(KafkaEventTemplate kafkaTemplate, EventConverter eventConverter) {
+    public NcaEventSender(KafkaEventTemplate kafkaTemplate, NcaEventConverter ncaEventConverter) {
         this.kafkaTemplate = kafkaTemplate;
-        this.eventConverter = eventConverter;
+        this.ncaEventConverter = ncaEventConverter;
     }
 
     public void sendResultEvents(DroolsForm response, String executedBy) {
         EventsLogger.debug(this.getClass().getName(), "Preparing for sending events...");
         if (kafkaTemplate != null && sendTopic != null && !sendTopic.isEmpty()) {
             //Send the complete form as an event.
-            kafkaTemplate.send(sendTopic, eventConverter.getEvent(response, executedBy));
+            kafkaTemplate.send(sendTopic, ncaEventConverter.getEvent(response, executedBy));
             EventsLogger.debug(this.getClass().getName(), "Event with results from '{}' send!", response.getName());
         }
     }

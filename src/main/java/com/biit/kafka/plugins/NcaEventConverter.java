@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Component
-public class EventConverter {
+public class NcaEventConverter {
 
     private static final String DROOLS_RESULT_EVENT_TYPE = "DroolsResultForm";
 
