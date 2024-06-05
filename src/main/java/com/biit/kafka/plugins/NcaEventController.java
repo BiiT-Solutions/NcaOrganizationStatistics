@@ -29,12 +29,14 @@ public class NcaEventController {
     private static final String FORM_LABEL = "NCA";
 
     private final ClientFactProvider clientFactProvider;
+    private final String subscribedTopic;
 
 
     public NcaEventController(@Autowired(required = false) NcaEventConsumerListener eventConsumerListener,
                               ClientFactProvider clientFactProvider, NcaEventSender ncaEventSender,
                               @Value("${spring.kafka.nca.topic:}") String subscribedTopic) {
         this.clientFactProvider = clientFactProvider;
+        this.subscribedTopic = subscribedTopic;
 
         //Listen to the topic
         if (eventConsumerListener != null) {
@@ -64,6 +66,8 @@ public class NcaEventController {
                 filter.putIfAbsent(SearchParameters.APPLICATION, FORM_LABEL);
                 filter.putIfAbsent(SearchParameters.ORGANIZATION, event.getCustomProperty(EventCustomProperties.ORGANIZATION));
                 filter.putIfAbsent(SearchParameters.LATEST_BY_USER, "true");
+                filter.putIfAbsent(SearchParameters.GROUP, subscribedTopic);
+                filter.putIfAbsent(SearchParameters.ELEMENT, FORM_LABEL);
                 final List<FactDTO> ncaFacts = clientFactProvider.get(filter);
 
                 final Map<String, Integer> answersCount = new HashMap<>();
