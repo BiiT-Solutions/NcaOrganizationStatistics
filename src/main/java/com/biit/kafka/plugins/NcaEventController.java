@@ -17,10 +17,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -32,7 +34,8 @@ public class NcaEventController {
     private static final String NCA_CULTURE_QUESTION_LABEL = "OrgCulture1";
     private static final String NCA_CULTURE_NATURE_LABEL = "OrgNature1";
     private static final String ANSWER_NOT_SELECTED = "0";
-    private static final DecimalFormat VALUE_FORMATTER = new DecimalFormat("#0.00");
+    private static final DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
+    private static final DecimalFormat VALUE_FORMATTER = new DecimalFormat("#0.00", symbols);
 
     private final ClientFactProvider clientFactProvider;
     private final String subscribedTopic;
