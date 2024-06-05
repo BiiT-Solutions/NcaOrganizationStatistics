@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -30,6 +31,8 @@ public class NcaEventController {
     private static final String NCA_FORM_LABEL = "NCA";
     private static final String NCA_CULTURE_QUESTION_LABEL = "OrgCulture1";
     private static final String NCA_CULTURE_NATURE_LABEL = "OrgNature1";
+    private static final String ANSWER_NOT_SELECTED = "0";
+    private static final DecimalFormat VALUE_FORMATTER = new DecimalFormat("#0.00");
 
     private final ClientFactProvider clientFactProvider;
     private final String subscribedTopic;
@@ -98,13 +101,15 @@ public class NcaEventController {
                             //Competence cards.
                             if (!questionWithValueResult.getAnswers().isEmpty()) {
                                 final String value = questionWithValueResult.getQuestionValues().iterator().next();
-                                try {
-                                    answersCount.putIfAbsent(questionWithValueResult.getName(), 0);
-                                    answersCount.put(questionWithValueResult.getName(), answersCount.get(questionWithValueResult.getName())
-                                            + 1);
-                                } catch (NumberFormatException e) {
-                                    NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
-                                            value, questionWithValueResult, ncaForm);
+                                if (!Objects.equals(value, ANSWER_NOT_SELECTED)) {
+                                    try {
+                                        answersCount.putIfAbsent(questionWithValueResult.getName(), 0);
+                                        answersCount.put(questionWithValueResult.getName(), answersCount.get(questionWithValueResult.getName())
+                                                + 1);
+                                    } catch (NumberFormatException e) {
+                                        NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
+                                                value, questionWithValueResult, ncaForm);
+                                    }
                                 }
                             }
                         }
@@ -125,7 +130,7 @@ public class NcaEventController {
 
     private void populateVariables(DroolsForm droolsForm, Map<String, Integer> answersCount, double total) {
         answersCount.forEach((key, value) -> {
-            final String valueString = System.out.printf("%.2f", value / total).toString();
+            final String valueString = VALUE_FORMATTER.format(value / total);
             NcaEventsLogger.debug(this.getClass(), "Populating variable '{}' with value '{}'.", key, valueString);
             ((DroolsSubmittedForm) droolsForm.getDroolsSubmittedForm())
                     .setVariableValue(droolsForm.getDroolsSubmittedForm(), key, valueString);
