@@ -85,6 +85,7 @@ public class NcaEventController {
                     });
                 }
                 populateVariables(droolsForm, answersCount, ncaFacts.size());
+                droolsForm.setTag(NcaEventConverter.FORM_OUTPUT);
                 return droolsForm;
             }
         } catch (Exception e) {

@@ -15,7 +15,7 @@ import java.util.UUID;
 public class NcaEventConverter {
 
     private static final String DROOLS_RESULT_EVENT_TYPE = "DroolsResultForm";
-    private static final String FORM_OUTPUT = "NCA Organization";
+    public static final String FORM_OUTPUT = "NCA Organization";
 
     @Value("${spring.application.name:#{null}}")
     private String applicationName;
