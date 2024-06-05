@@ -12,7 +12,8 @@ Import this library as a maven dependency:
 Remember to add these packages to your spring boot components:
 
 ```
-@ComponentScan({"com.biit.kafka.plugins", "..."})
+@ConfigurationPropertiesScan({"com.biit.kafka.config"}, "..."})
+@ComponentScan({"com.biit.kafka", "com.biit.factmanager.client", "..."})
 ```
 
 If needed, add the kafka configuration settings:
@@ -20,9 +21,10 @@ If needed, add the kafka configuration settings:
 ```
 #Kafka
 spring.kafka.enabled=true
+spring.kafka.topic=form
+spring.kafka.client.id=
+spring.kafka.group.id=
 spring.kafka.nca.send.topic=processedForm
-spring.kafka.nca.client.id=
-spring.kafka.nca.group.id=
 spring.kafka.bootstrap-servers=PLAINTEXT://testing.biit-solutions.com:29092
 spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
 spring.kafka.producer.value-serializer=com.biit.kafka.events.EventSerializer
