@@ -69,7 +69,7 @@ public class NcaEventController {
                 filter.putIfAbsent(SearchParameters.ORGANIZATION, event.getCustomProperty(EventCustomProperties.ORGANIZATION));
                 filter.putIfAbsent(SearchParameters.LATEST_BY_USER, "true");
                 filter.putIfAbsent(SearchParameters.GROUP, subscribedTopic);
-                filter.putIfAbsent(SearchParameters.ELEMENT, NCA_FORM_LABEL);
+                filter.putIfAbsent(SearchParameters.ELEMENT_NAME, NCA_FORM_LABEL);
                 final List<FactDTO> ncaFacts = clientFactProvider.get(filter);
 
                 final Map<String, Integer> answersCount = new HashMap<>();
