@@ -9,6 +9,7 @@ import com.biit.factmanager.dto.FactDTO;
 import com.biit.form.result.FormResult;
 import com.biit.form.result.QuestionWithValueResult;
 import com.biit.form.submitted.ISubmittedObject;
+import com.biit.form.submitted.ISubmittedQuestion;
 import com.biit.kafka.config.ObjectMapperFactory;
 import com.biit.kafka.events.Event;
 import com.biit.kafka.events.EventCustomProperties;
@@ -83,6 +84,7 @@ public class NcaEventController {
                 final List<FactDTO> ncaFacts = clientFactProvider.get(filter);
 
                 final Map<ISubmittedObject, Integer> answersCount = new HashMap<>();
+                final Map<ISubmittedObject, Map<String, Integer>> archetypesAnswersCount = new HashMap<>();
                 for (FactDTO ncaEvent : ncaFacts) {
                     //Read the question values and populate a submittedForm
                     final FormResult ncaForm = ObjectMapperFactory.getObjectMapper().readValue(ncaEvent.getValue(), FormResult.class);
@@ -93,9 +95,11 @@ public class NcaEventController {
                             if (!questionWithValueResult.getAnswers().isEmpty()) {
                                 final String value = questionWithValueResult.getQuestionValues().iterator().next();
                                 try {
-                                    final ISubmittedObject element = droolsForm.getChild(questionWithValueResult.getPathName());
-                                    answersCount.putIfAbsent(element, 0);
-                                    answersCount.put(element, answersCount.get(element) + 1);
+                                    final ISubmittedQuestion element = (ISubmittedQuestion) droolsForm.getChild(questionWithValueResult.getPathName());
+                                    final String answer = element.getAnswers().iterator().next();
+                                    archetypesAnswersCount.putIfAbsent(element, new HashMap<>());
+                                    archetypesAnswersCount.get(element).putIfAbsent(answer, 0);
+                                    archetypesAnswersCount.get(element).put(answer, archetypesAnswersCount.get(element).get(answer) + 1);
                                 } catch (NumberFormatException e) {
                                     NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
                                             value, questionWithValueResult, ncaForm);
@@ -120,6 +124,7 @@ public class NcaEventController {
                     });
                 }
                 NcaEventsLogger.debug(this.getClass(), "Answers counted '{}'.", answersCount);
+                populateArchetypes(droolsForm, archetypesAnswersCount, ncaFacts.size());
                 populateVariables(droolsForm, answersCount, ncaFacts.size());
                 droolsForm.setTag(NcaEventConverter.FORM_OUTPUT);
                 return droolsForm;
@@ -139,5 +144,16 @@ public class NcaEventController {
             ((DroolsSubmittedForm) droolsForm.getDroolsSubmittedForm())
                     .setVariableValue(key, VARIABLE_NAME, valueString);
         });
+    }
+
+
+    private void populateArchetypes(DroolsForm droolsForm, Map<ISubmittedObject, Map<String, Integer>> archetypesCount, double total) {
+        archetypesCount.forEach((key, answers) ->
+                answers.forEach((answer, value) -> {
+                    final String valueString = VALUE_FORMATTER.format(value / total);
+                    NcaEventsLogger.debug(this.getClass(), "Populating variable '{}' with value '{}'.", key, valueString);
+                    ((DroolsSubmittedForm) droolsForm.getDroolsSubmittedForm())
+                            .setVariableValue(key, VARIABLE_NAME + "_" + answer, valueString);
+                }));
     }
 }
