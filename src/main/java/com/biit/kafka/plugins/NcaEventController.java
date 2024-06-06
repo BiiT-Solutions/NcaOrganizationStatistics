@@ -8,6 +8,7 @@ import com.biit.factmanager.client.provider.ClientFactProvider;
 import com.biit.factmanager.dto.FactDTO;
 import com.biit.form.result.FormResult;
 import com.biit.form.result.QuestionWithValueResult;
+import com.biit.form.submitted.ISubmittedObject;
 import com.biit.kafka.config.ObjectMapperFactory;
 import com.biit.kafka.events.Event;
 import com.biit.kafka.events.EventCustomProperties;
@@ -33,8 +34,9 @@ public class NcaEventController {
     private static final String NCA_FORM_LABEL = "NCA";
     private static final String NCA_CULTURE_QUESTION_LABEL = "OrgCulture1";
     private static final String NCA_CULTURE_NATURE_LABEL = "OrgNature1";
+    public static final String VARIABLE_NAME = "Percentage";
     private static final String ANSWER_NOT_SELECTED = "0";
-    private static final DecimalFormat VALUE_FORMATTER = new DecimalFormat("#0.00", new DecimalFormatSymbols(Locale.US));
+    private static final DecimalFormat VALUE_FORMATTER = new DecimalFormat("#0.00", new DecimalFormatSymbols(Locale.ENGLISH));
 
     private final ClientFactProvider clientFactProvider;
     private final String subscribedTopic;
@@ -70,6 +72,7 @@ public class NcaEventController {
             if (Objects.equals(formResult.getLabel(), NCA_FORM_LABEL)) {
                 final DroolsForm droolsForm = DroolsFormProvider.createStructure(formResult);
                 droolsForm.setSubmittedBy(event.getCreatedBy());
+                droolsForm.setTag(NcaEventConverter.FORM_OUTPUT);
                 //Gets all forms from the organization.
                 final Map<SearchParameters, Object> filter = new HashMap<>();
                 filter.putIfAbsent(SearchParameters.APPLICATION, NCA_FORM_LABEL);
@@ -79,7 +82,7 @@ public class NcaEventController {
                 filter.putIfAbsent(SearchParameters.ELEMENT_NAME, NCA_FORM_LABEL);
                 final List<FactDTO> ncaFacts = clientFactProvider.get(filter);
 
-                final Map<String, Integer> answersCount = new HashMap<>();
+                final Map<ISubmittedObject, Integer> answersCount = new HashMap<>();
                 for (FactDTO ncaEvent : ncaFacts) {
                     //Read the question values and populate a submittedForm
                     final FormResult ncaForm = ObjectMapperFactory.getObjectMapper().readValue(ncaEvent.getValue(), FormResult.class);
@@ -90,10 +93,9 @@ public class NcaEventController {
                             if (!questionWithValueResult.getAnswers().isEmpty()) {
                                 final String value = questionWithValueResult.getQuestionValues().iterator().next();
                                 try {
-                                    answersCount.putIfAbsent(questionWithValueResult.getName() + "_" + value, 0);
-                                    answersCount.put(questionWithValueResult.getName() + "_" + value, answersCount.get(questionWithValueResult.getName()
-                                            + "_" + value)
-                                            + 1);
+                                    final ISubmittedObject element = droolsForm.getChild(questionWithValueResult.getPathName());
+                                    answersCount.putIfAbsent(element, 0);
+                                    answersCount.put(element, answersCount.get(element) + 1);
                                 } catch (NumberFormatException e) {
                                     NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
                                             value, questionWithValueResult, ncaForm);
@@ -105,9 +107,9 @@ public class NcaEventController {
                                 final String value = questionWithValueResult.getQuestionValues().iterator().next();
                                 if (!Objects.equals(value, ANSWER_NOT_SELECTED)) {
                                     try {
-                                        answersCount.putIfAbsent(questionWithValueResult.getName(), 0);
-                                        answersCount.put(questionWithValueResult.getName(), answersCount.get(questionWithValueResult.getName())
-                                                + 1);
+                                        final ISubmittedObject element = droolsForm.getChild(questionWithValueResult.getPathName());
+                                        answersCount.putIfAbsent(element, 0);
+                                        answersCount.put(element, answersCount.get(element) + 1);
                                     } catch (NumberFormatException e) {
                                         NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
                                                 value, questionWithValueResult, ncaForm);
@@ -130,12 +132,12 @@ public class NcaEventController {
         return null;
     }
 
-    private void populateVariables(DroolsForm droolsForm, Map<String, Integer> answersCount, double total) {
+    private void populateVariables(DroolsForm droolsForm, Map<ISubmittedObject, Integer> answersCount, double total) {
         answersCount.forEach((key, value) -> {
             final String valueString = VALUE_FORMATTER.format(value / total);
             NcaEventsLogger.debug(this.getClass(), "Populating variable '{}' with value '{}'.", key, valueString);
             ((DroolsSubmittedForm) droolsForm.getDroolsSubmittedForm())
-                    .setVariableValue(droolsForm.getDroolsSubmittedForm(), key, valueString);
+                    .setVariableValue(key, VARIABLE_NAME, valueString);
         });
     }
 }
