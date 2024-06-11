@@ -56,8 +56,12 @@ public class NcaEventController {
                     NcaEventsLogger.debug(this.getClass(), "Received event '{}' on topic '{}', key '{}', partition '{}' at '{}'",
                             event, topic, groupId, key, partition, LocalDateTime.ofInstant(Instant.ofEpochMilli(timeStamp),
                                     TimeZone.getDefault().toZoneId()));
-                    final DroolsForm droolsForm = processNca(event);
-                    ncaEventSender.sendResultEvents(droolsForm, event.getCreatedBy(), event.getSessionId());
+                    if (event != null) {
+                        final DroolsForm droolsForm = processNca(event);
+                        ncaEventSender.sendResultEvents(droolsForm, event.getCreatedBy(), event.getSessionId());
+                    } else {
+                        NcaEventsLogger.warning(this.getClass(), "Received null event on topic '" + topic + "'.");
+                    }
                 } else {
                     NcaEventsLogger.debug(this.getClass(), "Ignoring event topic '" + topic + "'.");
                 }
