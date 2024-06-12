@@ -58,7 +58,7 @@ public class NcaEventController {
                                     TimeZone.getDefault().toZoneId()));
                     if (event != null) {
                         final DroolsForm droolsForm = processNca(event);
-                        ncaEventSender.sendResultEvents(droolsForm, event.getCreatedBy(), event.getSessionId());
+                        ncaEventSender.sendResultEvents(droolsForm, event.getCreatedBy(), event.getSessionId(), event.getOrganization());
                     } else {
                         NcaEventsLogger.warning(this.getClass(), "Received null event on topic '" + topic + "'.");
                     }
@@ -81,7 +81,9 @@ public class NcaEventController {
                 //Gets all forms from the organization.
                 final Map<SearchParameters, Object> filter = new HashMap<>();
                 filter.putIfAbsent(SearchParameters.APPLICATION, NCA_FORM_LABEL);
-                filter.putIfAbsent(SearchParameters.ORGANIZATION, event.getCustomProperty(EventCustomProperties.ORGANIZATION));
+                final String organization = event.getOrganization() != null ? event.getOrganization()
+                        : event.getCustomProperty(EventCustomProperties.ORGANIZATION);
+                filter.putIfAbsent(SearchParameters.ORGANIZATION, organization);
                 filter.putIfAbsent(SearchParameters.LATEST_BY_USER, "true");
                 filter.putIfAbsent(SearchParameters.GROUP, subscribedTopic);
                 filter.putIfAbsent(SearchParameters.ELEMENT_NAME, NCA_FORM_LABEL);
@@ -131,6 +133,7 @@ public class NcaEventController {
                 populateArchetypes(droolsForm, archetypesAnswersCount, ncaFacts.size());
                 populateVariables(droolsForm, answersCount, ncaFacts.size());
                 droolsForm.setTag(NcaEventConverter.FORM_OUTPUT);
+                ((DroolsSubmittedForm) droolsForm.getDroolsSubmittedForm()).setOrganization(event.getOrganization());
                 return droolsForm;
             }
         } catch (JsonProcessingException e) {
