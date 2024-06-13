@@ -58,7 +58,7 @@ public class NcaEventController {
                                     TimeZone.getDefault().toZoneId()));
                     if (event != null) {
                         final DroolsForm droolsForm = processNca(event);
-                        ncaEventSender.sendResultEvents(droolsForm, event.getCreatedBy(), event.getSessionId(), event.getOrganization());
+                        ncaEventSender.sendResultEvents(droolsForm, event.getCreatedBy(), event.getOrganization(), event.getSessionId());
                     } else {
                         NcaEventsLogger.warning(this.getClass(), "Received null event on topic '" + topic + "'.");
                     }
