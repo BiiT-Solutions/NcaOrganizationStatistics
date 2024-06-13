@@ -102,7 +102,7 @@ public class NcaEventController {
                                 final String value = questionWithValueResult.getQuestionValues().iterator().next();
                                 try {
                                     final ISubmittedQuestion element = (ISubmittedQuestion) droolsForm.getChild(questionWithValueResult.getPathName());
-                                    final String answer = element.getAnswers().iterator().next();
+                                    final String answer = questionWithValueResult.getAnswers().iterator().next();
                                     archetypesAnswersCount.putIfAbsent(element, new HashMap<>());
                                     archetypesAnswersCount.get(element).putIfAbsent(answer, 0);
                                     archetypesAnswersCount.get(element).put(answer, archetypesAnswersCount.get(element).get(answer) + 1);
