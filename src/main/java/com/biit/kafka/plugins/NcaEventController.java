@@ -102,10 +102,9 @@ public class NcaEventController {
                                 final String value = questionWithValueResult.getQuestionValues().iterator().next();
                                 try {
                                     final ISubmittedQuestion element = (ISubmittedQuestion) droolsForm.getChild(questionWithValueResult.getPathName());
-                                    final String answer = questionWithValueResult.getAnswers().iterator().next();
                                     archetypesAnswersCount.putIfAbsent(element, new HashMap<>());
-                                    archetypesAnswersCount.get(element).putIfAbsent(answer, 0);
-                                    archetypesAnswersCount.get(element).put(answer, archetypesAnswersCount.get(element).get(answer) + 1);
+                                    archetypesAnswersCount.get(element).putIfAbsent(value, 0);
+                                    archetypesAnswersCount.get(element).put(value, archetypesAnswersCount.get(element).get(value) + 1);
                                 } catch (NumberFormatException e) {
                                     NcaEventsLogger.severe(this.getClass(), "Error obtaining the value '{}' from question '{}' at form '{}'.",
                                             value, questionWithValueResult, ncaForm);
