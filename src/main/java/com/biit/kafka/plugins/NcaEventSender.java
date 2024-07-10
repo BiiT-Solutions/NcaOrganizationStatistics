@@ -24,8 +24,8 @@ public class NcaEventSender {
     }
 
     public void sendResultEvents(DroolsForm response, String executedBy, String organization, UUID sessionId) {
-        NcaEventsLogger.debug(this.getClass().getName(), "Preparing for sending events...");
         if (kafkaTemplate != null && sendTopic != null && !sendTopic.isEmpty() && response != null) {
+            NcaEventsLogger.debug(this.getClass().getName(), "Preparing for sending events for '{}' ...", response.getName());
             //Send the complete form as an event.
             final Event event = ncaEventConverter.getEvent(response, executedBy);
             event.setSessionId(sessionId);
