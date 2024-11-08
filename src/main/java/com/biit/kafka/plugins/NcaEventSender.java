@@ -3,12 +3,15 @@ package com.biit.kafka.plugins;
 import com.biit.drools.form.DroolsForm;
 import com.biit.kafka.events.Event;
 import com.biit.kafka.events.KafkaEventTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
+@ConditionalOnExpression("${spring.kafka.enabled:false}")
 public class NcaEventSender {
 
     @Value("${spring.kafka.nca.send.topic:}")
@@ -18,6 +21,12 @@ public class NcaEventSender {
 
     private final NcaEventConverter ncaEventConverter;
 
+    private NcaEventSender() {
+        this.kafkaTemplate = null;
+        this.ncaEventConverter = null;
+    }
+
+    @Autowired(required = false)
     public NcaEventSender(KafkaEventTemplate kafkaTemplate, NcaEventConverter ncaEventConverter) {
         this.kafkaTemplate = kafkaTemplate;
         this.ncaEventConverter = ncaEventConverter;

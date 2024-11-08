@@ -16,6 +16,7 @@ import com.biit.kafka.events.EventCustomProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Controller;
 
 import java.text.DecimalFormat;
@@ -31,6 +32,7 @@ import java.util.TimeZone;
 
 
 @Controller
+@ConditionalOnExpression("${spring.kafka.enabled:false}")
 public class NcaEventController {
     private static final String NCA_FORM_LABEL = "NCA";
     private static final String NCA_CULTURE_QUESTION_LABEL = "OrgCulture1";
@@ -42,8 +44,13 @@ public class NcaEventController {
     private final ClientFactProvider clientFactProvider;
     private final String subscribedTopic;
 
+    private NcaEventController() {
+        this.clientFactProvider = null;
+        this.subscribedTopic = null;
+    }
 
-    public NcaEventController(@Autowired(required = false) NcaEventConsumerListener eventConsumerListener,
+    @Autowired(required = false)
+    public NcaEventController(NcaEventConsumerListener eventConsumerListener,
                               ClientFactProvider clientFactProvider, NcaEventSender ncaEventSender,
                               @Value("${spring.kafka.nca.topic:}") String subscribedTopic) {
         this.clientFactProvider = clientFactProvider;
