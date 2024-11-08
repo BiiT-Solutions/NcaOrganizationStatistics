@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.biit.nca</groupId>
     <artifactId>nca-organization-statistics</artifactId>
-    <version>0.1.5-SNAPSHOT</version>
+    <version>0.1.9-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>NCA Organizatin Statistics Generator</name>
     <description>Generates the infographic input from multiple NCA Kafka events</description>
