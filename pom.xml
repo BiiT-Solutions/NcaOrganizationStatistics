@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.biit-solutions.nca</groupId>
     <artifactId>nca-organization-statistics</artifactId>
-    <version>0.1.11</version>
+    <version>0.1.12-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>NCA Organizatin Statistics Generator</name>
     <description>Generates the infographic input from multiple NCA Kafka events</description>
@@ -46,7 +46,7 @@
         <connection>scm:git:ssh://git@github.com/BiiT-Solutions/NcaOrganizationStatistics.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/BiiT-Solutions/NcaOrganizationStatistics.git</developerConnection>
         <url>https://github.com/BiiT-Solutions/NcaOrganizationStatistics.git</url>
-        <tag>nca-organization-statistics-0.1.11</tag>
+        <tag>nca-organization-statistics</tag>
     </scm>
 
     <dependencies>
